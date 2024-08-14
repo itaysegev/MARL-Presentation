@@ -1,0 +1,526 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>Multi-Agent RL</title>
+
+		<link rel="stylesheet" href="dist/reset.css">
+		<link rel="stylesheet" href="dist/reveal.css">
+		<link rel="stylesheet" href="dist/theme/white.css" id="theme">
+		<!-- Add DLR logo -->
+		<link rel="stylesheet" href="css/dlr.css">
+		<!-- Grid system: http://flexboxgrid.com/ -->
+		<link rel="stylesheet" href="css/flexboxgrid.min.css">
+
+		<!-- Theme used for syntax highlighted code -->
+		<!-- <link rel="stylesheet" href="plugin/highlight/monokai.css" id="highlight-theme"> -->
+		<link rel="stylesheet" href="plugin/highlight/atom-one-dark.css" id="highlight-theme">
+	</head>
+	<body>
+		<div class="side-block">
+		</div>
+		<div class="reveal">
+			<div class="slides">
+				
+				<section data-background-image="https://github.com/CLAIR-LAB-TECHNION/CLAI/blob/main/presentations/dqn-tutorial/images/bg_image.jpg?raw=true">													
+					<h3 id='main-title'>Multi-Agent Reinforcement Learning </h3>															
+						<div>
+							Itay Segev 
+							<br>
+							<span class="italic">CLAI Tutorial 10</span><br>
+						</div>
+				</section>
+
+
+				<section>
+					<h4>Outline</h4>
+					<ol class="medium-text">
+						<li>Introduction and Motivation </li>
+						<li>Tasks</li>
+						<li>Agent Relationship</li>
+						<li>Learning Style</li>
+						<li>Self-Play</li>
+						<li>RL Tips and Tricks</li>
+					</ol>
+				</section>
+
+				   
+				<section>
+					<h4>MARL: On the shoulder of RL</h4>
+					<div class="row">
+						<div class="col-xs-12">
+							<a href="https://www.youtube.com/watch?v=kopoLzvh5jY&t=163s" target="_blank">
+								<img src="https://huggingface.co/datasets/huggingface-deep-rl-course/course-images/resolve/main/en/unit10/selfdrivingcar.jpg"
+								 alt=""
+								 class="shadow"
+								 style="max-width:70%">
+							</a>
+						</div>
+					</div>
+				</section>
+
+
+				<section>
+					<h4>Key Challenges in MARL</h4>
+					<ul>
+					  <li><strong>Non-Stationarity:</strong> Environment changes as agents learn and adapt</li>
+					  <li><strong>Scalability:</strong> Increasing number of agents increases complexity</li>
+					  <li><strong>Partial Observability:</strong> Agents may have limited knowledge of the environment</li>
+					</ul>
+				  </section>
+
+				<section>
+					<h4>Tasks: Grid World</h4>
+				   <img src="https://marllib.readthedocs.io/en/latest/_images/rware.gif" style="max-width:100%;"> 
+			    </section>
+
+				
+
+
+				<section>
+					<h4>Tasks: Gaming and Physical Simulation</h4>
+				   <img src="https://marllib.readthedocs.io/en/latest/_images/gaming.jpg" style="max-width:100%;">
+			    </section>
+
+
+				<section>
+					<h4>Tasks:Real-world Application</h4>
+				   <img src="https://marllib.readthedocs.io/en/latest/_images/realworld.jpg" style="max-width:100%;">
+			    </section>
+
+				<section>
+					<h4>Agent Relationship </h4>
+					<ul>
+					  <li><strong>Working Mode</strong>
+						<ul>
+						  <li>Cooperative vs Competitive</li>
+						</ul>
+					  </li>
+					  <li><strong>Agent Similarity</strong>
+						<ul>
+						  <li>Homogeneous vs Heterogeneous</li>
+						</ul>
+					  </li>
+					</ul>
+					<div style="text-align:center;">
+						<img src="https://marllib.readthedocs.io/en/latest/_images/relation.png" alt="Agent Relationship" style="max-width:100%;">
+					  </div>
+				  </section>
+
+				  <section>
+					<h4>Task Mode</h4>
+					<ul>
+					  <li><strong>Cooperative:</strong> Agents maximize common benefits (e.g., warehouse robots)</li>
+					  <li><strong>Competitive:</strong> Agents maximize individual gains (e.g., tennis match)</li>
+					  <li><strong>Mixed:</strong> Combination of cooperative and competitive (e.g., SoccerTwos)</li>
+					</ul>
+				  </section>
+
+				<section>
+					<h4>Agents Type </h4>
+					<ul>
+					  <li><strong>Homogeneous Agents</strong>
+						<ul>
+						  <li>Share the same policy</li>
+						  <li>Different actions based on individual observations</li>
+						</ul>
+					  </li>
+					  <li><strong>Heterogeneous Agents</strong>
+						<ul>
+						  <li>Each agent has its own policy</li>
+						  <li>Handles diverse observations and outputs actions with varied meanings</li>
+						</ul>
+					  </li>
+					</ul>
+				  </section>
+
+
+				<section>
+					<h4>Learning Style</h4>
+				   <ul>
+					   <li class="fragment">Independent Learning</li>
+					   <li class="fragment">Centralized Training Decentralized Execution</li>
+					   <li class="fragment">Fully Centralized</li>
+				   </ul>
+				</section>
+
+				<section>
+					<h4>Independent Learners</h4>
+					<ul>
+					  <li>Agents learn independently, treating other agents as part of the environment</li>
+					  <li>Challenges:
+						<ul>
+						  <li>Non-stationary environment due to evolving policies of other agents</li>
+						  <li>Possible lack of convergence</li>
+						</ul>
+					  </li>
+					</ul>
+				  </section>
+
+
+				<section>
+					<h4>Examples: Independent Q-Learning</h4>
+				   <img src="https://marllib.readthedocs.io/en/latest/_images/iql.png" style="max-width:100%;">
+			    </section>
+
+
+				<section>
+					<h4>Centralized Training, Decentralized Execution</h4>
+					<ul>
+					  <li>Centralized training allows agents to learn joint policies</li>
+					  <li>Decentralized execution enables scalability</li>
+					</ul>
+					<div style="text-align:center;">
+						<img src="https://marllib.readthedocs.io/en/latest/_images/ctde.png"  style="max-width:80%;">
+					  </div>
+				  </section>
+
+				 
+
+				<section>
+					<h4>Value Decomposition</h4>
+				   <img src="https://marllib.readthedocs.io/en/latest/_images/vdn.png" alt="discrete state" style="max-width:80%;">
+			    </section>
+
+				<section>
+					<h4>Centralized Critic</h4>
+				   <img src="https://marllib.readthedocs.io/en/latest/_images/maddpg.png" alt="discrete state" style="max-width:80%;">
+			    </section>
+ 
+				<section>
+					<h3>Knowledge Sharing</h3>
+				   <ul class="medium-text">
+					   <li><span class="fragment">Agent</span> <span class="fragment">→</span> <span class="fragment">Replay buffer and model parameters</span></li>
+					   <li><span class="fragment">Scenario</span> <span class="fragment">→</span> <span class="fragment"> Developing a general policy that can be applied to multiple scenarios</span></li>
+					   <li><span class="fragment">Task</span> <span class="fragment">→</span> <span class="fragment">Learn a self-contained and adaptable strategy without limitations on task mode</span></li>
+				   </ul>
+				</section>
+
+				<section>
+					<h4>Self-Play</h4>
+					<ul>
+					  <li>A technique to train agents in adversarial games</li>
+					  <li>Agents play against copies of themselves</li>
+					  <li>Gradually improves policies through self-competition</li>
+					</ul>
+				  </section>
+
+				  <section>
+					<h4>Benefits of Self-Play</h4>
+					<ul>
+					  <li>Ensures a challenging yet achievable opponent</li>
+					  <li>Avoids overfitting by progressively increasing difficulty</li>
+					  <li>Emulates human learning in competitive environments</li>
+					</ul>
+				  </section>
+
+
+				  <section>
+					<h4>Future Directions in MARL</h4>
+					<ul>
+					  <li>Enhancing scalability for large-scale systems</li>
+					  <li>Improving robustness in dynamic and uncertain environments</li>
+					  <li>Integrating with other AI techniques (e.g., deep learning, natural language processing)</li>
+					  <li>Expanding applications to new domains (e.g., healthcare, smart cities)</li>
+					</ul>
+				  </section>
+			
+
+			<section>
+				<h2>RL Tips And Tricks</h2>
+			</section>
+			
+			<section>
+				<h3>RL is Hard (1/2)</h3>
+				<div class="row">
+					<div class="col-xs-6">
+						<img src="https://github.com/araffin/araffin.github.io/blob/master/slides/rlvs-sb3-handson/images/a2c.png?raw=true" alt="A2C" style="max-width: 100%">
+						<p class="xsmall-text caption">Which algorithm is better?</p>
+					</div>
+					<div class="col-xs-6">
+						<p class="medium-text fragment">
+							The only difference: the epsilon value to avoid division by zero in the optimizer
+							(one is <code class="medium-text">eps=1e-7</code>
+							the other <code class="medium-text">eps=1e-5</code>)
+						</p>
+					</div>
+				</div>
+				<aside class="notes">
+					A and B are actually the same RL algorithm (A2C),
+					sharing the exact same code, same hardware, same hyperparameters...
+					except the epsilon value to avoid division by zero in the optimizer
+				</aside>
+
+			</section>
+			<section>
+				<h3>RL is Hard (2/2)</h3>
+				<ul>
+					<li class="fragment">Data collection by the agent itself</li>
+					<li class="fragment">Sensitivity to the random seed / hyperparameters</li>
+					<li class="fragment">Sample inefficient</li>
+					<li class="fragment">Reward function design</li> 
+				</ul>
+				<p class="xsmall-text fragment">
+					<a href="https://www.alexirpan.com/2018/02/14/rl-hard.html">RL is hard blog post</a>,
+					<a href="https://stable-baselines3.readthedocs.io/en/master/guide/rl_tips.html">RL tips and tricks</a>
+				</p>
+				<aside class="notes">
+					- RL is hard (because quite different from supervised learning, data collection on the policy which depends on the data)
+				</aside>
+			</section>
+			<section>
+				<div class="row">
+					<div class="col-xs-12">
+						<img src="https://github.com/araffin/araffin.github.io/blob/master/slides/rlvs-sb3-handson/images/rl_glitch.png?raw=true" alt="RL Glitch" style="max-width: 40%">
+					</div>
+				</div>
+				<p class="xsmall-text">Credits: Rishabh Mehrotra (@erishabh)</p>
+				<aside class="notes">
+					reward hacking, if it can maximises its reward without
+					solving the task, it will do it!
+				</aside>
+			</section>
+			<section>
+				<h3>Best Practices - New Algorithm</h3>
+				<ul class="medium-text">
+					<li class="fragment">Use Small Test Problems - Run experiments quickly</li>
+					<li class="fragment">Do hyperparameter search</li>
+					<li class="fragment">Interpret and visualize learning process: state visitation, value function, etc.</li>
+					<li class="fragment">
+						Use the
+						<a href="https://github.com/DLR-RM/rl-baselines3-zoo">RL zoo</a>
+					</li>
+				</ul>
+				<p class="xsmall-text fragment">
+					<a href="https://arxiv.org/abs/1709.06560">
+						Deep RL that matters (Henderson et al.)
+					</a>
+
+				</p>
+				<aside class="notes">
+					- best practices for comparison: separate eval,
+						quantitative results, tune hyperparameters <br>
+					- save all parameters
+						to reproduce the run (all included in the RL Zoo) <br>
+					- rl zoo only when you know what you are doing <br>
+					- there is no silver bullet <br>
+					- more on what to do when it doesn't work later
+				</aside>
+			</section>
+
+			<section>
+				<div style="position:relative;">
+					<h3 class="fragment fade-in-then-out" data-fragment-index="1" style="position:absolute; margin-left: auto; margin-right: auto; left: 0; right: 0;" >
+						RL in practice on a custom task
+					</h3>
+					<h3 class="fragment fade-in-then-out" data-fragment-index="2" style="position:absolute; margin-left: auto; margin-right: auto; left: 0; right: 0;" >
+						Do you need RL?
+					</h3>
+					<h3 class="fragment" data-fragment-index="3" style="position:absolute; margin-left: auto; margin-right: auto; left: 0; right: 0;" >
+						Do you really need RL?
+					</h3>
+				</div>
+
+				<div class="row" style="margin-top: 50px;">
+					<div class="col-xs-12">
+						<img class="fragment" data-fragment-index="3" src="https://github.com/araffin/araffin.github.io/blob/master/slides/rlvs-sb3-handson/images/mr_bean_sure.jpg?raw=true" alt="Mr Bean Are you sure meme"/>
+					</div>
+				</div>
+
+				<aside class="notes">
+					- Do I really need RL? If PID does the job, then don't, unless for education <br>
+
+					Most of the advices are already in the SB3 documentation.
+				</aside>
+			</section>
+			<section>
+				<h3>Defining a custom task</h3>
+				<ul>
+					<li class="fragment">Observation space</li>
+					<li class="fragment">Action space</li>
+					<li class="fragment">Reward function</li>
+					<li class="fragment">Termination conditions</li>
+				</ul>
+				<aside class="notes">
+					Always start simple!
+				</aside>
+			</section>
+			<section>
+				<h3>Choosing the observation space</h3>
+				<ul>
+					<li class="fragment">Enough information to solve the task</li>
+					<li class="fragment">Do not break Markov assumption</li>
+					<li class="fragment">Normalize!</li>
+					<li class="fragment">If observations have unknown range, standardize - x =clip((x −µ)/σ,−10,10)</li>
+				</ul>
+				<aside class="notes">
+					normalize especially for PPO/A2C + running average when you don't know the limits in
+					advance (VecNormalize) <br>
+				</aside>
+			</section>
+
+			<section>
+				<h3>Choosing the Action space</h3>
+				<ul>
+					<li class="fragment">Discrete / Continuous</li> 
+					<li class="fragment">Complexity vs Final performance</li>
+				</ul>
+				<aside class="notes">
+					depends on your task, sometimes you don't have the choice (e.g. atari games)
+					for robotics, makes more sense to use continuous action <br>
+					bigger action space: better performance at the end but may take much longer to train
+					(example: racing car) <br>
+					+ trial and errors
+				</aside>
+			</section>
+
+			<section>
+				<h3>Continuous action space: Normalize? Normalize!</h3>
+				<div class="row">
+					<div class="col-xs-12 medium-text r-stack">
+						<pre class="fragment"><code data-trim data-line-numbers="1-6|7-9|11-13|15-19" class="python">
+						from gym import spaces
+
+						# Unnormalized action spaces only work with algorithms
+						# that don't directly rely on a Gaussian distribution to define the policy
+						# (e.g. DDPG or SAC, where their output is rescaled to fit the action space limits)
+
+						# LIMITS TOO BIG: in that case, the sampled actions will only have values
+						# around zero, far away from the limits of the space
+						action_space = spaces.Box(low=-1000, high=1000, shape=(n_actions,), dtype="float32")
+
+						# LIMITS TOO SMALL: in that case, the sampled actions will almost
+						# always saturate (be greater than the limits)
+						action_space = spaces.Box(low=-0.02, high=0.02, shape=(n_actions,), dtype="float32")
+
+						# BEST PRACTICE: action space is normalized, symmetric
+						# and has an interval range of two,
+						# which is usually the same magnitude as the initial standard deviation
+						# of the Gaussian used to sample actions (unit initial std in SB3)
+						action_space = spaces.Box(low=-1, high=1, shape=(n_actions,), dtype="float32")
+						</code></pre>
+
+						<img src="https://github.com/araffin/araffin.github.io/blob/master/slides/rlvs-sb3-handson/images/gaussian.png?raw=true" alt="Gaussian" class="fragment" style="max-width: 100%">
+
+					</div>
+				</div>
+				<aside class="notes">
+					- Common pitfalls: observation normalization, action space normalization (ex continuous action) -> use the env checker
+
+				</aside>
+			</section>
+			<section>
+				<h3>Choosing the reward function</h3>
+				<ul>
+					<li class="fragment">Start with reward shaping</li>
+					<li class="fragment">Primary / Secondary reward</li>
+					<li class="fragment">Normalize!</li>
+					<li class="fragment">Rescale the rewards, but don’t shift mean, as that affects agent’s will to live</li>
+				</ul>
+				<aside class="notes">
+					- reward shaping: careful with reward hacking<br>
+					- choosing weights for rewards: primary and secondary
+					 look at the magnitude (ex continuity too high, it will do nothing) 
+				</aside>
+			</section>
+			<section>
+				<h3>Termination conditions?</h3>
+				<ul>
+					<li class="fragment">Early stopping</li>
+					<li class="fragment">Special treatment needed for timeouts</li>
+					<li class="fragment">Should not change the task (reward hacking)</li>
+				</ul>
+				<aside class="notes">
+					- early stopping: prevent the agent to explore useless regions of your env
+					make learning faster <br>
+					- careful or reward hacking: if you penalize at every steps but
+					stop the episode early if it explores unwanted regions:
+					will maximise its reward by stopping the episode early
+				</aside>
+			</section>
+			<section>
+				<h3>Which algorithm to choose?</h3>
+				<div class="row">
+					<div class="col-xs-12">
+						<img src="https://github.com/araffin/araffin.github.io/blob/master/slides/rlvs-sb3-handson/images/algo_flow.png?raw=true" alt="Algo flow" style="max-width: 80%">
+					</div>
+				</div>
+				<aside class="notes">
+					- Which algorithm should I use? depends on the env and on what matters for you
+					action space + multiprocessing (wall clock time vs sample efficiency)? <br>
+					- w.r.t. performance: usually a hyperparameter problem (between the latest algo)
+					for continuous control: use TQC <br>
+					- even more parallel: ES (cf previous lecture)
+				</aside>
+			</section>
+			<section>
+				<h3>It doesn't work!</h3>
+				<ul class="medium-text">
+					<li class="fragment">Did you follow the best practices?</li>
+					<li class="fragment">Start simple</li>
+					<li class="fragment">Use trusted implementations</li>
+					<li class="fragment">Increase budget</li>
+					<li class="fragment">Hyperparameter tuning (<a href="https://github.com/optuna/optuna">Optuna</a>)</li>
+				</ul>
+
+				<aside class="notes">
+					- What to do when it does not work? <br>
+						First, use trusted implementation (SB3) with recommend hyperparameters
+						(cf papers and RL zoo, ex normalization for PPO)<br>
+						then try with more budget and with hyperparameters tuning before saying "it does not work"
+						<br>
+						Iterate quickly
+				</aside>
+			</section>
+			<section>
+				<h4>Best Practices</h4>
+				<ul>
+					<li class="fragment">Visualize random policy: does it sometimes exhibit desired behavior?</li>
+					<li class="fragment">Plot time series for observations and rewards. Are they on a reasonable scale?</li>
+					<li class="fragment">Early in tuning process, may need huge number of samples</li>
+					<li class="fragment">Always Use Multiple Random Seeds</li>
+					<li class="fragment">Explore sensitivity to each parameter</li>
+
+				</ul>
+			</section>
+
+				
+
+			</div>
+		</div>
+
+		<script src="dist/reveal.js"></script>
+		<script src="plugin/notes/notes.js"></script>
+		<script src="plugin/markdown/markdown.js"></script>
+		<script src="plugin/highlight/highlight.js"></script>
+		<script src="plugin/math/math.js"></script>
+		<script>
+			// More info about initialization & config:
+			// - https://revealjs.com/initialization/
+			// - https://revealjs.com/config/
+			Reveal.initialize({
+				// Display the page number of the current slide
+				slideNumber: true,
+
+				// Add the current slide number to the URL hash so that reloading the
+				// page/copying the URL will return you to the same slide
+				hash: true,
+
+				// Push each slide change to the browser history. Implies `hash: true`
+				// history: false,
+
+				// math: {
+				// 	mathjax: 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js',
+				// 	config: 'TeX-AMS_HTML-full'  // See http://docs.mathjax.org/en/latest/config-files.html
+				// 	// pass other options into `MathJax.Hub.Config()`
+				// 	// TeX: { Macros: macros }
+				// },
+
+				// Learn about plugins: https://revealjs.com/plugins/
+				plugins: [ RevealMarkdown, RevealHighlight, RevealNotes, RevealMath.KaTeX]
+			});
+		</script>
+	</body>
+</html>
